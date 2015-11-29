@@ -20,70 +20,112 @@
     <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
     <script>
       $(document).ready(function(){
-        var $lanes = $('#gamepad-lanes');
-        $lanes.empty();
-        
         
       });
-    
-      // just support 1 gamepad for now - will be the last one plugged in at any given time.
-      var gamepad = null;
-      var rafId = 0;
-    
-      $(window).on('gamepadconnected', function(evt){
-        console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
-          evt.originalEvent.gamepad.index, evt.originalEvent.gamepad.id,
-          evt.originalEvent.gamepad.buttons.length, evt.originalEvent.gamepad.axes.length);
-          
-        $('#gamepad-msg').text('Gamepad connected');
-          
-        gamepad = evt.originalEvent.gamepad;
+      
+      var rafId = 0; // will be non-zero if callback is active
+      var haveEvents = 'ongamepadconnected' in window;
+      var controllers = {};
+
+      function connecthandler(e) {
+        addgamepad(e.gamepad);
+        rafId = requestAnimationFrame(updateStatus);
+      }
+
+      function addgamepad(gamepad) {
+        controllers[gamepad.index] = gamepad;
+
+        // for (var i = 0; i < gamepad.buttons.length; i++) {
+        //   
+        // }
+        // 
+        // for (var i = 0; i < gamepad.axes.length; i++) {
+        //   
+        // }
+      }
+
+      function disconnecthandler(e) {
+        removegamepad(e.gamepad);
         
-        console.log(gamepad);
-        
-        for(var i=0; i < gamepad.buttons.length; i++){
-          $('#gamepad-lanes').append(
+        // stop our animation loop if the last controller was disconnected
+        if(Object.keys(controllers).length === 0){
+          cancelAnimationFrame(rafId);
+          rafId = 0;
         }
-        
-        gameLoop();
-      });
-      
-      $(window).on('gamepaddisconnected', function(evt){
-        // TODO will disable all gamepads if any are disconnected!
-        gamepad = null;
-        
-        $('#gamepad-msg').text('Waiting for gamepad ...');
-        $('#gamepad-lanes').empty();
-        
-        window.cancelAnimationFrame(rafId);
-      });
-      
-      function gameLoop(){
-        if(!gamepad)
-          return;
-          
-        // gamepad.id
-        // gamepad.index
-        // gamepad.mapping
-        // gamepad.connected
-        // gamepad.buttons
-        // gamepad.buttons.pressed
-        // gamepad.buttons.value
-        // gamepad.axes
-        // gamepad.timestamp
-        
-        var $lanes = $('#gamepad-lanes');
-        
-        for(var i=0; i < gamepad.buttons.length; i++){
-          // gamepad.buttons[i].pressed
-          // gamepad.buttons[i].value
-          
-          if(gamepad.buttons[i].pressed){
-            $lanes.children().eq(i)
+      }
+
+      function removegamepad(gamepad) {
+        delete controllers[gamepad.index];
+      }
+
+      function updateStatus() {
+        var i = 0;
+        var j;
+
+        for (j in controllers) {
+          var controller = controllers[j];
+
+          // for (i = 0; i < controller.buttons.length; i++) {
+          //   var val = controller.buttons[i];
+          //   var pressed = val == 1.0;
+          //   if (typeof(val) == "object") {
+          //     pressed = val.pressed;
+          //     val = val.value;
+          //   }
+          // 
+          //   var pct = Math.round(val * 100) + "%"; // for analog triggers
+          //   
+          //   // ---
+          // }
+
+          for (i = 0; i < controller.axes.length; i++) {
+            // controller.axes[i] + 1 -> moves range to [0, 2]
           }
         }
+
+        rafId = requestAnimationFrame(updateStatus);
+      }
       
-        rafId = window.requestAnimationFrame(gameLoop);
+      function scanhandler(){
+        scangamepads();
+        
+        // Possibilities:
+        // 0 -> 0: request, then imm. cancel frame
+        // 0 -> 1+: request frame
+        // 1+ -> 0: cancel frame
+        // 1+ -> 1+: do nothing
+        
+        if(rafId === 0)
+          rafId = requestAnimationFrame(updateStatus);
+        
+        // stop our animation loop if the last controller was disconnected
+        if(Object.keys(controllers).length === 0){
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+      }
+
+      function scangamepads() {
+        // Completely wipe the controllers object, to capture removed gamepads as well.
+        controllers = {};
+      
+        var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+        
+        if(!gamepads) // will be null if no controllers connected, or empty array if not supported
+          return;
+        
+        for (var i = 0; i < gamepads.length; i++) {
+          if (gamepads[i]) // MDN claims that the first elem is always null
+            addgamepad(gamepads[i]);
+        }
+      }
+
+
+      window.addEventListener("gamepadconnected", connecthandler);
+      window.addEventListener("gamepaddisconnected", disconnecthandler);
+
+      if (!haveEvents) {
+        setInterval(scanhandler, 500);
       }
     </script>
   </body>
