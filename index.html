@@ -69,6 +69,10 @@
         var i = 0;
         var j;
         var normX, normY;
+        var length;
+        
+        var headX, headY;
+        var rootX, rootY;
 
         for (j in controllers) {
           var controller = controllers[j];
@@ -90,10 +94,28 @@
           //   // controller.axes[i] + 1 -> moves range to [0, 2]
           // }
           
-          normX = (controller.axes[0] + 1) / 2;
-          normY = (controller.axes[1] + 1) / 2;
+          rootX = canvas.width/2;
+          rootY = canvas.height/2;
           
-          ctx.fillRect(normX*canvas.width, normY*canvas.height, 8,8);
+          // Show the origin if the detected direction components are smaller than a noise threshold
+          if(Math.abs(controller.axes[0]) < 0.03125 && Math.abs(controller.axes[1]) < 0.03125){
+            ctx.fillRect(rootX - 4, rootY - 4, 8,8);
+          }
+          // Draw a direction ray from the center of the canvas
+          else {
+            length = Math.sqrt(controller.axes[0]*controller.axes[0] + controller.axes[1]*controller.axes[1]);
+            
+            normX = controller.axes[0] / length;
+            normY = controller.axes[1] / length;
+            
+            headX = rootX + (normX * canvas.height/2); // scaling by smallest canvas dimension
+            headY = rootY + (normY * canvas.height/2);
+            
+            ctx.beginPath();
+            ctx.moveTo(rootX, rootY);
+            ctx.lineTo(headX, headY);
+            ctx.stroke();
+          }
         }
 
         rafId = requestAnimationFrame(updateStatus);
