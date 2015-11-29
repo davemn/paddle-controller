@@ -13,8 +13,7 @@
   </head>
   <body>
     <h1>Gamepad API Test</h1>
-    <p id="gamepad-msg">Waiting for gamepad ...</p>
-    <div id="gamepad-lanes"></div>
+    <canvas style="border:1px solid black;" id="canvas-ctl" width="320" height="240"></canvas>
   
     <!-- Placed at the end of the document so the pages load faster -->
     <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
@@ -26,6 +25,8 @@
       var rafId = 0; // will be non-zero if callback is active
       var haveEvents = 'ongamepadconnected' in window;
       var controllers = {};
+      var canvas = document.getElementById('canvas-ctl');
+      var ctx = canvas.getContext('2d');
 
       function connecthandler(e) {
         addgamepad(e.gamepad);
@@ -59,8 +60,15 @@
       }
 
       function updateStatus() {
+        // redraw the background
+        ctx.clearRect(0,0, canvas.width, canvas.height);
+        
+        // ctx.fillStyle = 'blue';
+        // ctx.fillRect(0,0, canvas.width, canvas.height);
+      
         var i = 0;
         var j;
+        var normX, normY;
 
         for (j in controllers) {
           var controller = controllers[j];
@@ -78,9 +86,14 @@
           //   // ---
           // }
 
-          for (i = 0; i < controller.axes.length; i++) {
-            // controller.axes[i] + 1 -> moves range to [0, 2]
-          }
+          // for (i = 0; i < controller.axes.length; i++) {
+          //   // controller.axes[i] + 1 -> moves range to [0, 2]
+          // }
+          
+          normX = (controller.axes[0] + 1) / 2;
+          normY = (controller.axes[1] + 1) / 2;
+          
+          ctx.fillRect(normX*canvas.width, normY*canvas.height, 8,8);
         }
 
         rafId = requestAnimationFrame(updateStatus);
