@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Transparent Ham Studios">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>GAMEPAD</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+  </head>
+  <body>
+    <h1>Gamepad API Test</h1>
+    <p id="gamepad-msg">Waiting for gamepad ...</p>
+    <div id="gamepad-lanes"></div>
+  
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script>
+      $(document).ready(function(){
+        var $lanes = $('#gamepad-lanes');
+        $lanes.empty();
+        
+        
+      });
+    
+      // just support 1 gamepad for now - will be the last one plugged in at any given time.
+      var gamepad = null;
+      var rafId = 0;
+    
+      $(window).on('gamepadconnected', function(evt){
+        console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+          evt.originalEvent.gamepad.index, evt.originalEvent.gamepad.id,
+          evt.originalEvent.gamepad.buttons.length, evt.originalEvent.gamepad.axes.length);
+          
+        $('#gamepad-msg').text('Gamepad connected');
+          
+        gamepad = evt.originalEvent.gamepad;
+        
+        console.log(gamepad);
+        
+        for(var i=0; i < gamepad.buttons.length; i++){
+          $('#gamepad-lanes').append(
+        }
+        
+        gameLoop();
+      });
+      
+      $(window).on('gamepaddisconnected', function(evt){
+        // TODO will disable all gamepads if any are disconnected!
+        gamepad = null;
+        
+        $('#gamepad-msg').text('Waiting for gamepad ...');
+        $('#gamepad-lanes').empty();
+        
+        window.cancelAnimationFrame(rafId);
+      });
+      
+      function gameLoop(){
+        if(!gamepad)
+          return;
+          
+        // gamepad.id
+        // gamepad.index
+        // gamepad.mapping
+        // gamepad.connected
+        // gamepad.buttons
+        // gamepad.buttons.pressed
+        // gamepad.buttons.value
+        // gamepad.axes
+        // gamepad.timestamp
+        
+        var $lanes = $('#gamepad-lanes');
+        
+        for(var i=0; i < gamepad.buttons.length; i++){
+          // gamepad.buttons[i].pressed
+          // gamepad.buttons[i].value
+          
+          if(gamepad.buttons[i].pressed){
+            $lanes.children().eq(i)
+          }
+        }
+      
+        rafId = window.requestAnimationFrame(gameLoop);
+      }
+    </script>
+  </body>
+</html>
