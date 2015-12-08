@@ -14,12 +14,13 @@
   <body>
     <h1>Gamepad API Test</h1>
     <canvas style="border:1px solid black;" id="canvas-ctl" width="320" height="240"></canvas>
+    <p>Wheel Angle (radians) : <span id="wheel-angle">0.0</span></p>
   
     <!-- Placed at the end of the document so the pages load faster -->
     <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
     <script>
       $(document).ready(function(){
-        
+      
       });
       
       var rafId = 0; // will be non-zero if callback is active
@@ -58,6 +59,63 @@
       function removegamepad(gamepad) {
         delete controllers[gamepad.index];
       }
+      
+      // function atan2Rel(y, x, relativeTo){
+      // /*
+      //   atan2(y,x) = t, t +- 2PI, t +- 4PI, ... 
+      //   branch to pick depends on <relativeTo>
+      //   
+      //   Test cases:
+      // 
+      //   0.523599 rad <=> 30 deg
+      //   > (atan2Rel(0.5,0.5,-2*Math.PI+0.523599) / (2*Math.PI)) * 360
+      //   -315
+      //   > (atan2Rel(0.5,0.5,-2*Math.PI-0.523599) / (2*Math.PI)) * 360
+      //   -674.9999999999999
+      //   
+      //   these should both return -315
+      // */
+      //   var multiple = Math.floor(relativeTo / (2*Math.PI));
+      //   
+      //   var normRelativeTo = relativeTo - (multiple*2*Math.PI);
+      // 
+      //   var angleRelative = Math.atan2(y,x) - normRelativeTo;
+      //   
+      //   if(angleRelative > Math.PI)
+      //     angleRelative -= 2*Math.PI;
+      // 
+      //   return relativeTo + angleRelative;
+      // }
+      
+      function atan2Rel2(y, x, relativeTo){
+        var multipleRoundZero = Math.floor(relativeTo / (2*Math.PI));
+        
+        var multipleRoundDown = multipleRoundZero;
+        if(relativeTo < 0)
+          multipleRoundDown -= 1;
+          
+        // -4 -3 -2 -1 0 1 2 3 4
+        //     x
+        
+        // -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6 7
+        //  [  x     [       [     [ x   [ x
+          
+        // var angleRelative = Math.atan2(y,x) - (revolutions * 2 * Math.PI)
+        // 
+        // if(angleRelative > Math.PI)
+        //   angleRelative -= 2*Math.PI;
+        // 
+        // return multiple*(2*Math.PI) + angleRelative;
+        
+        var angleMultiple = multipleRoundDown;
+        
+        if(relativeTo - (multipleRoundDown*2*Math.PI) >= Math.PI){
+          angleMultiple += 1;
+        }
+        
+        var angle = Math.atan2(y,x);
+        return angleMultiple*(2*Math.PI) + angle;
+      }
 
       function updateStatus() {
         // redraw the background
@@ -69,10 +127,11 @@
         var i = 0;
         var j;
         var normX, normY;
-        var length;
+        var length, stickAngle;
         
         var headX, headY;
         var rootX, rootY;
+        var angle = 0;
 
         for (j in controllers) {
           var controller = controllers[j];
@@ -100,6 +159,8 @@
           // Show the origin if the detected direction components are smaller than a noise threshold
           if(Math.abs(controller.axes[0]) < 0.03125 && Math.abs(controller.axes[1]) < 0.03125){
             ctx.fillRect(rootX - 4, rootY - 4, 8,8);
+            
+            hadStickInputLastFrame = false;
           }
           // Draw a direction ray from the center of the canvas
           else {
@@ -111,10 +172,40 @@
             headX = rootX + (normX * canvas.height/2); // scaling by smallest canvas dimension
             headY = rootY + (normY * canvas.height/2);
             
+            // Draw the direction ray
+            
             ctx.beginPath();
             ctx.moveTo(rootX, rootY);
             ctx.lineTo(headX, headY);
             ctx.stroke();
+            
+            // Draw the angle indicator
+            
+            stickAngle = Math.atan2(normY, normX);
+            
+            if(hadStickInputLastFrame){
+              // angle += (stickAngle - prevStickAngle);
+              // 
+              // // if(prevStickAngle < 0 && stickAngle > 0)
+              // 
+              // // Moved CCW through the 180 deg. boundary
+              // if(Math.PI - prevStickAngle < 0.25 && stickAngle - Math.PI < 0.25){
+              //   
+              // }
+              
+              stickAngle = atan2Rel2(normY, normX, prevStickAngle);
+              
+              angle += (stickAngle - prevStickAngle);
+            }
+            
+            // ---
+            
+            $('#wheel-angle').text(angle);
+            
+            // ---
+            
+            prevStickAngle = stickAngle;
+            hadStickInputLastFrame = true;
           }
         }
 
