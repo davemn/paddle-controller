@@ -1,1 +1,1 @@
-An expirement with using a standard game controller (and Javascript) to recreate the input from a [paddle controller](https://en.wikipedia.org/wiki/Paddle_%28game_controller%29). Example usage for a driving game to come!
+An experiment with using a standard game controller (and Javascript) to recreate the input from a [paddle controller](https://en.wikipedia.org/wiki/Paddle_%28game_controller%29). Example usage for a driving game to come!
