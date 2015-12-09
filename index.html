@@ -15,12 +15,96 @@
     <h1>Gamepad API Test</h1>
     <canvas style="border:1px solid black;" id="canvas-ctl" width="320" height="240"></canvas>
     <p>Wheel Angle (radians) : <span id="wheel-angle">0.0</span></p>
+    <canvas style="border:1px solid black;" id="canvas-graph" width="320" height="240"></canvas>
   
     <!-- Placed at the end of the document so the pages load faster -->
     <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
     <script>
       $(document).ready(function(){
-      
+        var graph = $('#canvas-graph').get(0);
+        var graphCtx = graph.getContext('2d');
+        
+        var axes = [
+          { posY: 25, padding: 8, lineWidth: 2 },
+          { posY: 60, padding: 8, lineWidth: 2 }
+        ];
+        
+        var ticks = [
+          { pixelsPerUnit: 20, centerUnit: 4 },
+          { pixelsPerUnit: 8, centerUnit: 0 }
+        ];
+        
+        // redraw the background
+        graphCtx.clearRect(0,0, graph.width, graph.height);
+        
+        // graphCtx.fillStyle = 'blue';
+        // graphCtx.fillRect(0,0, graph.width, graph.height);
+        // 
+        // graphCtx.strokeStyle = 'red';
+        
+        for(var axisI=0; axisI < axes.length; axisI++){
+        // Draw axes
+          graphCtx.lineWidth = axes[axisI].lineWidth;
+          
+          if(axes[axisI].lineWidth % 2 !== 0){
+            graphCtx.moveTo(axes[axisI].padding, axes[axisI].posY+0.5);
+            graphCtx.lineTo(graph.width - axes[axisI].padding, axes[axisI].posY+0.5);
+          }
+          else {
+            graphCtx.moveTo(axes[axisI].padding, axes[axisI].posY);
+            graphCtx.lineTo(graph.width - axes[axisI].padding, axes[axisI].posY);
+          }
+            
+          graphCtx.stroke();
+          
+        // Draw tick marks
+          var pixelsWide = graph.width - (2*axes[axisI].padding);
+          
+          // plot origin
+          var originX = (graph.width / 2) - (ticks[axisI].pixelsPerUnit * ticks[axisI].centerUnit);
+          graphCtx.moveTo(originX, axes[axisI].posY - 16);
+          graphCtx.lineTo(originX, axes[axisI].posY + 16)
+          graphCtx.stroke();
+          
+          var tickX, x=-1;
+          while(true){
+            tickX = originX + (x*ticks[axisI].pixelsPerUnit);
+            
+            if(tickX < axes[axisI].padding){
+              break;
+            }
+            
+            if(x % 4 === 0){
+              graphCtx.moveTo(tickX, axes[axisI].posY - 12);
+              graphCtx.lineTo(tickX, axes[axisI].posY + 12)
+            } else {
+              graphCtx.moveTo(tickX, axes[axisI].posY - 8);
+              graphCtx.lineTo(tickX, axes[axisI].posY + 8)
+            }
+            graphCtx.stroke();                      
+            
+            x--;
+          }
+          x = 1;
+          while(true){
+            tickX = originX + (x*ticks[axisI].pixelsPerUnit);
+            
+            if(tickX > graph.width-axes[axisI].padding){
+              break;
+            }
+            
+            if(x % 4 === 0){
+              graphCtx.moveTo(tickX, axes[axisI].posY - 12);
+              graphCtx.lineTo(tickX, axes[axisI].posY + 12)
+            } else {
+              graphCtx.moveTo(tickX, axes[axisI].posY - 8);
+              graphCtx.lineTo(tickX, axes[axisI].posY + 8)
+            }
+            graphCtx.stroke();                      
+            
+            x++;          
+          }
+        }
       });
       
       var rafId = 0; // will be non-zero if callback is active
