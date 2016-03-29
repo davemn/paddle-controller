@@ -81,6 +81,29 @@
     return Smooth.Linear(duration, from, to);
   }
   
+  function interpToZero(curInterp, direction){
+    var from = curInterp(Time.time);
+    var duration, to;
+
+    if(direction > 0){
+      if(from < 0){
+        duration = -from*1.5;
+        to = 0;
+      }
+      else
+        return null;
+    }
+    else {
+      if(from <= 0)
+        return null;
+      else if(from > 0){
+        duration = from*1.5;
+        to = 0;
+      }
+    }
+    return Smooth.Linear(duration, from, to);
+  }
+  
   $(document).keydown(function(evt){
     if(isDown[evt.which])
       return;
@@ -107,23 +130,34 @@
   });
   
   $(document).keyup(function(evt){
-    // keyups should never go towards 
+    // keyups should never go away from 0
+    var interpFunc;
+    
     switch(evt.which){
       case 'W'.charCodeAt(0):
         rawDirections.Vertical--;
-        directions.Vertical = interpTo(directions.Vertical, -1);
+        // directions.Vertical = interpTo(directions.Vertical, -1);
+        interpFunc = interpToZero(directions.Vertical, -1);
+        if(interpFunc)
+          directions.Vertical = interpFunc;
         break;
       case 'A'.charCodeAt(0): // 4
         rawDirections.Horizontal++;
-        directions.Horizontal = interpTo(directions.Horizontal, +1);
+        interpFunc = interpToZero(directions.Horizontal, +1);
+        if(interpFunc)
+          directions.Horizontal = interpFunc;
         break;
       case 'S'.charCodeAt(0):
         rawDirections.Vertical++;
-        directions.Vertical = interpTo(directions.Vertical, +1);
+        interpFunc = interpToZero(directions.Vertical, +1);
+        if(interpFunc)
+          directions.Vertical = interpFunc;
         break;
       case 'D'.charCodeAt(0): // 3
         rawDirections.Horizontal--;
-        directions.Horizontal = interpTo(directions.Horizontal, -1);
+        interpFunc = interpToZero(directions.Horizontal, -1);
+        if(interpFunc)
+          directions.Horizontal = interpFunc;
         break;
     }
     setIsDown(evt.which, false);
