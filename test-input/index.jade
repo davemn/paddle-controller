@@ -1,0 +1,47 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset='utf-8')
+    title Gamepad Test
+    
+    link(rel='stylesheet', type='text/css', href='index.css')
+  body
+    p Test test test
+
+    .canvas-container
+      canvas#input-viz
+              
+    script(src='../bower_components/jquery/dist/jquery.min.js')
+    script(src='Time.js')
+    script(src='Vector2.js')
+    script(src='Input.js')
+    
+    script(src='CanvasHelper.js')
+    script(src='InputViz.js')
+    script(src='Wave.js')
+    
+    script.
+      var viz, wave;
+      
+      function step(){
+        // console.log(Input.GetAxis('Horizontal') + ', ' + Input.GetAxis('Vertical'));
+        viz.updateAndDraw();
+        wave.updateAndDraw();
+        requestAnimationFrame(step);
+      }
+    
+      $(document).ready(function(){
+        CanvasHelper.setup('#input-viz', 1.0);
+      
+        viz = new InputViz.instance({
+          canvasSelector: '#input-viz'
+        });
+        
+        wave = new Wave.instance({
+          canvasSelector: '#input-viz',
+          phase: 0,
+          frequency: 0.5 // waves per sec.
+        });
+      
+        requestAnimationFrame(step);
+      });

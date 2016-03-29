@@ -1,0 +1,9 @@
+canvas {
+  display: block;
+}
+.canvas-container {
+  position: relative;
+  display: block;
+  width: 128px;
+  margin: 0 auto;
+}
