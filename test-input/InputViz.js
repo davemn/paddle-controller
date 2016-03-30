@@ -30,7 +30,6 @@
   
   exports.instance.prototype._drawCursor = function(){
     var cursorPos = new Vector2(Input.GetAxis('Horizontal'), Input.GetAxis('Vertical'));
-    // cursorPos = Vector2.Scale(cursorPos.normalized(), Math.min(this.canvas.halfWidth, this.canvas.halfHeight));
     cursorPos = Vector2.Scale(cursorPos, Math.min(this.canvas.halfWidth, this.canvas.halfHeight));
     
     this.ctx.save();
@@ -44,9 +43,52 @@
     this.ctx.restore();
   };
   
-  exports.instance.prototype.updateAndDraw = function(Input){
-    // Input.GetAxis('Horizontal')
+  var paddle, paddleStart, paddleAngle;
+  var engageThreshold = 0.4;
+  var isEngaged = false;
+  
+  exports.instance.prototype._drawEngageCircle = function(){
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.arc(
+      this.canvas.halfWidth, this.canvas.halfHeight,
+      engageThreshold * Math.min(this.canvas.halfWidth, this.canvas.halfHeight),
+      0, 2*Math.PI);
+    this.ctx.stroke();
+    this.ctx.restore();
+  };
+  
+  exports.instance.prototype._drawPaddle = function(){
+    var cursorPos = new Vector2(Input.GetAxis('Horizontal'), Input.GetAxis('Vertical'));
+    paddle = Vector2.up;
     
+    if(cursorPos.magnitude() >= engageThreshold){
+      if(!isEngaged){
+        isEngaged = true;
+        paddleStart = cursorPos;
+      }
+      
+      paddleAngle = Math.atan2(cursorPos.y, cursorPos.x) - Math.atan2(paddleStart.y, paddleStart.x);
+      paddle = Vector2.Rotate(paddle, paddleAngle * 180 / Math.PI);
+      
+      this.ctx.save();
+      this.ctx.translate(this.canvas.halfWidth, this.canvas.halfHeight);
+      this.ctx.scale(1, -1);
+      this.ctx.beginPath();
+      this.ctx.strokeStyle = 'blue';
+      this.ctx.moveTo(0, 0);
+      var paddleIndicator = Vector2.Scale(paddle, this.canvas.halfWidth);
+      this.ctx.lineTo(paddleIndicator.x, paddleIndicator.y);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+    else {
+      isEngaged = false;
+      paddleStart = null;
+    }
+  };
+  
+  exports.instance.prototype.updateAndDraw = function(){
     this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
     this.ctx.strokeStyle = 'black';
     this.ctx.fillStyle = 'red';
@@ -56,5 +98,9 @@
     
     // Cursor
     this._drawCursor();
+    
+    // Circle of Engagement
+    this._drawEngageCircle();
+    this._drawPaddle();
   };
 })(window.InputViz = {}, jQuery, Vector2, Input);

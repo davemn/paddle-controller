@@ -112,6 +112,7 @@
       case Key.W:
         rawDirections.Vertical++;
         directions.Vertical = interpTo(directions.Vertical, +1);
+        // Smooth.Blend(directions.Vertical, Smooth.Linear);
         break;
       case Key.A: // 2
         rawDirections.Horizontal--;

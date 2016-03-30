@@ -29,17 +29,17 @@ Vector2.Scale = function(a, b){
 Vector2.Negate = function(a){
   return new Vector2(-a.x, -a.y);
 };
-Vector2.prototype.Angle = function(a, b){
+Vector2.Angle = function(a, b){
   var rads = Math.acos(Vector2.Dot(a.normalized(), b.normalized()));
   return 180*rads/Math.PI;
 };
-Vector2.prototype.Distance = function(a, b){
+Vector2.Distance = function(a, b){
   return Vector2.Subtract(a, b).magnitude();
 };
-Vector2.prototype.Dot = function(a, b){
+Vector2.Dot = function(a, b){
   return a.x*b.x + a.y*b.y;
 };
-Vector2.prototype.Lerp = function(a, b, t){
+Vector2.Lerp = function(a, b, t){
   t = Math.max(t, 0);
   t = Math.min(t, 1);
   
@@ -47,6 +47,13 @@ Vector2.prototype.Lerp = function(a, b, t){
   heading = Vector2.Scale(heading, t);
   
   return Vector2.Add(a, heading);
+};
+Vector2.Rotate = function(a, t){
+  var rad = t * Math.PI / 180;
+  var x = Math.cos(rad)*a.x - Math.sin(rad)*a.y;
+  var y = Math.sin(rad)*a.x + Math.cos(rad)*a.y;
+  
+  return new Vector2(x, y);
 };
 
 // - Instance methods (replacement for C#'s static variables) ---
