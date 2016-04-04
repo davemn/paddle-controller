@@ -43,8 +43,8 @@
     this.ctx.restore();
   };
   
-  var paddle, paddleStart, paddleAngle;
-  var engageThreshold = 0.4;
+  var paddle, paddleStart = Vector2.up;
+  var engageStart, engageAngle, engageThreshold = 0.4;
   var isEngaged = false;
   
   exports.instance.prototype._drawEngageCircle = function(){
@@ -60,32 +60,35 @@
   
   exports.instance.prototype._drawPaddle = function(){
     var cursorPos = new Vector2(Input.GetAxis('Horizontal'), Input.GetAxis('Vertical'));
-    paddle = Vector2.up;
+    paddle = paddleStart;
     
     if(cursorPos.magnitude() >= engageThreshold){
       if(!isEngaged){
         isEngaged = true;
-        paddleStart = cursorPos;
+        engageStart = cursorPos;
       }
       
-      paddleAngle = Math.atan2(cursorPos.y, cursorPos.x) - Math.atan2(paddleStart.y, paddleStart.x);
-      paddle = Vector2.Rotate(paddle, paddleAngle * 180 / Math.PI);
-      
-      this.ctx.save();
-      this.ctx.translate(this.canvas.halfWidth, this.canvas.halfHeight);
-      this.ctx.scale(1, -1);
-      this.ctx.beginPath();
-      this.ctx.strokeStyle = 'blue';
-      this.ctx.moveTo(0, 0);
-      var paddleIndicator = Vector2.Scale(paddle, this.canvas.halfWidth);
-      this.ctx.lineTo(paddleIndicator.x, paddleIndicator.y);
-      this.ctx.stroke();
-      this.ctx.restore();
+      engageAngle = Math.atan2(cursorPos.y, cursorPos.x) - Math.atan2(engageStart.y, engageStart.x);
+      paddle = Vector2.Rotate(paddle, engageAngle * 180 / Math.PI);
     }
     else {
+      if(isEngaged){
+        paddleStart = Vector2.Rotate(paddle, engageAngle * 180 / Math.PI);
+        paddle = paddleStart;
+      }
       isEngaged = false;
-      paddleStart = null;
     }
+    
+    this.ctx.save();
+    this.ctx.translate(this.canvas.halfWidth, this.canvas.halfHeight);
+    this.ctx.scale(1, -1);
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = 'blue';
+    this.ctx.moveTo(0, 0);
+    var paddleIndicator = Vector2.Scale(paddle, this.canvas.halfWidth);
+    this.ctx.lineTo(paddleIndicator.x, paddleIndicator.y);
+    this.ctx.stroke();
+    this.ctx.restore();
   };
   
   exports.instance.prototype.updateAndDraw = function(){
