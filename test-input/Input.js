@@ -1,4 +1,4 @@
-(function(exports, $){
+(function(exports, $, Time){
   var Smooth = {
     Constant: function(val){
       return function(time){ return val; }
